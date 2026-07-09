@@ -1,0 +1,21 @@
+model Contact {
+  id             String      @id @default(uuid())
+  
+  firstName      String   @db.VarChar(255)   
+  lastName       String?  @db.VarChar(255) 
+  email          String?
+  phone          String?
+
+  isFavorite     Boolean  @default(false)
+  personalNote   String?  @db.Text
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+
+  @@map("contacts")
+}

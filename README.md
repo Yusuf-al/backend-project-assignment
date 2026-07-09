@@ -50,7 +50,7 @@ Make sure the following are installed:
 ## Clone Repository
 
 ```bash
-git clone [<repository-url>](https://github.com/Yusuf-al/backend-project-assignment)
+git clone https://github.com/Yusuf-al/backend-project-assignment
 
 cd project-name
 ```

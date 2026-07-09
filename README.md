@@ -1,6 +1,8 @@
 # Contact Management API
 
-Backend implementation for extending Monica CRM contact functionality using:
+Backend implementation for extending the Monica CRM contact module.
+
+## Tech Stack
 
 * Node.js
 * Express.js
@@ -8,61 +10,76 @@ Backend implementation for extending Monica CRM contact functionality using:
 * PostgreSQL
 * Prisma ORM
 * JWT Authentication
-* Cookies
+* HTTP-only Cookies
 * CORS
 
-## Features Implemented
+# Features Implemented
+
+## Contact Management
 
 * Create contacts
-* List contacts
+* Retrieve contacts
 * Search contacts
 * Filter favorite contacts
-* Mark/unmark favorite contacts
-* Add/update personal notes
+* Mark/unmark contacts as favorite
+* Add and update personal notes
 * Contact statistics
 * Pagination support
 * Sorting support
+
+## Authentication & User Management
+
+* User registration
+* User login
+* JWT-based authentication
+* Refresh token support
+* Cookie-based authentication
+* User profile management
+* Role-based authorization
 
 # Setup Instructions
 
 ## Prerequisites
 
-Make sure you have installed:
+Make sure the following are installed:
 
 * Node.js (v18+)
 * PostgreSQL
 * npm
 
-## 1. Clone Repository
+## Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/Yusuf-al/backend-project-assignment)
 
 cd project-name
 ```
 
-## 2. Install Dependencies
+## Install Dependencies
 
 ```bash
 npm install
 ```
 
-## 3. Environment Configuration
+## Environment Configuration
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the project root:
 
 ```env
-PORT = [PORT]
+PORT=[PORT]
+
 DATABASE_URL=[DATABASE_URL]
 
-JWT_ACCESS_SECRET=[ACCESS TOEKN]
-JWT_REFRESH_SECRET=[ACCESS TOKEN]
-JWT_ACCESS_EXPIRES_IN=[A_T EXPIRE TIME]
-JWT_REFRESH_EXPIRES_IN=[R_T EXPIRE TIME]
-BCRYPT_SALT_ROUNDS = [SALT ROUND] 
+JWT_ACCESS_SECRET=[ACCESS_TOKEN_SECRET]
+JWT_REFRESH_SECRET=[REFRESH_TOKEN_SECRET]
+
+JWT_ACCESS_EXPIRES_IN=[ACCESS_TOKEN_EXPIRE_TIME]
+JWT_REFRESH_EXPIRES_IN=[REFRESH_TOKEN_EXPIRE_TIME]
+
+BCRYPT_SALT_ROUNDS=[SALT_ROUNDS]
 ```
 
-## 4. Database Setup
+## Database Setup
 
 Run Prisma migration:
 
@@ -82,15 +99,15 @@ npx prisma generate
 npx prisma studio
 ```
 
-## 5. Run Application
+## Run Application
 
-Development mode:
+### Development
 
 ```bash
 npm run dev
 ```
 
-Production build:
+### Production
 
 ```bash
 npm run build
@@ -98,158 +115,185 @@ npm run build
 npm start
 ```
 
-The API will run on:
+Application will run on:
 
-```
+```http
 http://localhost:[PORT]
 ```
 
-# Implementation Approach
-
-## Project Structure
+# Project Structure
 
 The project follows a modular Express architecture:
 
-```
+```text
 src
 │
 ├── modules
-│   └── contacts
-│       ├── contacts.controller.ts
-│       ├── contacts.service.ts
-│       ├── contacts.route.ts
-│       └── contacts.interface.ts
-│   └── users
-│       ├── users.controller.ts
-│       ├── users.service.ts
-│       ├── users.route.ts
-│       └── users.interface.ts
+│   ├── contacts
+│   │   ├── contacts.controller.ts
+│   │   ├── contacts.service.ts
+│   │   ├── contacts.route.ts
+│   │   └── contacts.interface.ts
+│   │
+│   ├── users
+│   │   ├── users.controller.ts
+│   │   ├── users.service.ts
+│   │   ├── users.route.ts
+│   │   └── users.interface.ts
+│   │
 │   └── auth
 │       ├── auth.controller.ts
 │       ├── auth.service.ts
-│       ├── auth.route.ts
-│       
+│       └── auth.route.ts
 │
 ├── middleware
-|      └── auth.ts
-|      └── index.d.ts
+│   ├── auth.ts
+│   └── index.d.ts
+│
 ├── utils
-│      ├── catchAsync.ts
-│      ├── checkContact.ts
-│      ├── jwt.ts
-│      └── sendResponse.ts
+│   ├── catchAsync.ts
+│   ├── checkContact.ts
+│   ├── jwt.ts
+│   └── sendResponse.ts
+│
 ├── lib
 │   └── prisma.ts
-│── app.ts
+│
+├── app.ts
 └── server.ts
 ```
 
 # Authentication
 
-Some contact routes require authentication. These routes are protected using JWT-based authentication middleware.
+Authentication is implemented using:
 
-The client must send a valid authentication token (stored in cookies) before accessing protected endpoints.
+* JWT Access Token
+* JWT Refresh Token
+* HTTP-only Cookies
+* Role-based authorization
 
-## Protected Routes
+## Authentication Flow
 
-The following routes require an authenticated user:
+1. User logs in with email and password.
+2. Server validates credentials.
+3. Server generates access and refresh tokens.
+4. Tokens are stored in HTTP-only cookies.
+5. Protected routes validate the token using authentication middleware.
 
-### Create New Contact
+## Protected Contact Routes
+
+The following routes require authentication:
+
+### Create Contact
 
 ```http
 POST /api/contacts/new
 ```
 
-Required roles:
+Roles:
 
-* ADMIN
-* USER
+```
+ADMIN
+USER
+```
 
-### Get User's Contacts
+### Get User Contacts
 
 ```http
 GET /api/contacts/all
 ```
 
-Required roles:
+Roles:
 
-* ADMIN
-* USER
+```
+ADMIN
+USER
+```
 
-### Get Contact Statistics
+### Contact Statistics
 
 ```http
 GET /api/contacts/stats
 ```
 
-Required roles:
+Roles:
 
-* ADMIN
-* USER
+```
+ADMIN
+USER
+```
 
-## Authentication Flow
-
-1. User logs in through the authentication endpoint.
-2. Server generates a JWT token.
-3. JWT token is stored in HTTP-only cookies.
-4. The client sends the cookie automatically with future requests.
-5. Authentication middleware validates the token before allowing access to protected routes.
-
-## Example Request
-
-After successful login, send:
+Example authenticated request:
 
 ```http
 GET /api/contacts/all
-```
 
-with authentication cookie:
-
-```http
 Cookie:
 accessToken=<your_jwt_token>
 ```
 
-If the token is missing or invalid, the API will return an authentication error.
+# User & Authentication API
 
+## Register User
 
-## API Implementation Approach
-
-The contact listing endpoint was extended using dynamic Prisma filtering.
-
-Supported queries:
+Creates a new user account.
 
 ```http
-GET /api/contacts?favorite=1
-
-GET /api/contacts?search=john
-
-GET /api/contacts?favorite=1&search=john
+POST /api/auth/register
 ```
 
-The same query condition is reused for:
+Request:
 
-* Fetching contacts
-* Counting total records
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
 
-This avoids duplicated Prisma query logic.
+## Login User
 
-## Pagination & Sorting
-
-Existing pagination was maintained using:
-
-* `skip`
-* `take`
-
-Sorting was implemented using Prisma `orderBy`.
-
-Example:
+Authenticates a user and generates JWT tokens.
 
 ```http
-GET /api/contacts?page=1&limit=10&sortBy=createdAt&sortOrder=desc
+POST /api/auth/login
 ```
 
-# API Endpoints
+Request:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+## Refresh Token
+
+Generate a new access token using refresh token.
+
+```http
+POST /api/auth/refresh-token
+```
+
+## Get My Profile
+
+Returns authenticated user's profile.
+
+```http
+GET /api/users/me
+```
+
+## Update Profile
+
+Updates authenticated user's information.
+
+```http
+PUT /api/users/my-profile
+```
+
+# Contact API
 
 ## Create Contact
 
@@ -291,10 +335,16 @@ Example response:
 }
 ```
 
-## Mark Favorite
+## Mark Contact as Favorite
 
 ```http
 POST /api/contacts/:id/favorite
+```
+
+## Toggle Favorite Status
+
+```http
+PATCH /api/contacts/:id/favorite
 ```
 
 ## Update Contact Note
@@ -303,6 +353,61 @@ POST /api/contacts/:id/favorite
 PUT /api/contacts/:id/note
 ```
 
-# Conclusion
+# Search, Filtering, Pagination & Sorting
 
-The implementation extends the Monica CRM contact module while maintaining clean architecture, reusable service logic, Prisma best practices, and scalable API design.
+The contact listing endpoint supports dynamic filtering.
+
+## Search
+
+```http
+GET /api/contacts?search=john
+```
+
+Search is performed on:
+
+* First name
+* Last name
+* Email
+* Phone
+
+## Favorite Filter
+
+```http
+GET /api/contacts?favorite=1
+```
+
+## Combined Filtering
+
+```http
+GET /api/contacts?favorite=1&search=john
+```
+
+## Pagination
+
+Pagination is implemented using:
+
+* `skip`
+* `take`
+
+Example:
+
+```http
+GET /api/contacts?page=1&limit=10
+```
+
+## Sorting
+
+Sorting is handled using Prisma `orderBy`.
+
+Example:
+
+```http
+GET /api/contacts?page=1&limit=10&sortBy=createdAt&sortOrder=desc
+```
+
+The same Prisma filtering logic is reused for:
+
+* Fetching contacts
+* Counting total records
+
+
